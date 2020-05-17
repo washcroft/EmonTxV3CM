@@ -17,7 +17,6 @@ v1.3: Inclusion of watchdog
 v1.4: Error checking to EEPROM config
 v1.5: Faster RFM factory test
 v1.6: Removed reliance on full jeelib for RFM, minimal rfm_send fuction implemented instead, thanks to Robert Wall
-v1.7: Check radio channel is clear before transmit
 
 emonhub.conf node decoder (nodeid is 15 when switch is off, 16 when switch is on)
 See: https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
@@ -34,7 +33,6 @@ copy the following in to emonhub.conf:
 
 */
 #include <Arduino.h>
-#include <avr/wdt.h>
 
 const byte version = 16;                                 // Firmware version divide by 10 to get version number e,g 05 = v0.5
 
@@ -57,7 +55,7 @@ const byte version = 16;                                 // Firmware version div
 enum rfband {RF12_433MHZ = 1, RF12_868MHZ, RF12_915MHZ }; // frequency band.
 
 byte RF_freq = RF12_433MHZ;                             // Frequency of radio module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
-byte nodeID = 15;                                       // node ID for this emonTx.
+byte nodeID = 16;                                       // node ID for this emonTx.
 int networkGroup = 210;                                 // wireless network group, needs to be same as emonBase / emonPi and emonGLCD. OEM default is 210
 const int busyThreshold = -97;                          // Signal level below which the radio channel is clear to transmit
 const byte busyTimeout = 15;                            // Time in ms to wait for the channel to become clear, before transmitting anyway
@@ -92,7 +90,7 @@ float i2Lead = 4.2;
 float i3Cal = 90.9;         // (2000 turns / 22 Ohm burden) = 90.9
 float i3Lead = 4.2;
 float i4Cal = 16.67;        // (2000 turns / 120 Ohm burden) = 16.67
-float i4Lead = 6.0;
+float i4Lead = 1.0;
 float vCal  = 268.97;       // (240V x 13) / 11.6V = 268.97 Calibration for UK AC-AC adapter 77DB-06-09
 const float vCal_USA = 130.0;   // Calibration for US AC-AC adapter 77DA-10-09
 bool  USA=false;
@@ -119,8 +117,6 @@ bool CT1, CT2, CT3, CT4;     // Record if CT present during startup
 //----------------------------------------Setup--------------------------------------------------
 void setup() 
 {  
-  wdt_enable(WDTO_8S);
-  
   pinMode(LEDpin, OUTPUT);
   digitalWrite(LEDpin,HIGH);
   
@@ -338,6 +334,4 @@ void loop()
     #endif
     // End of print out ----------------------------------------------------
   }
-  wdt_reset();
-  delay(20);
 }
