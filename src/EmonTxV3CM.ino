@@ -142,6 +142,15 @@ void setup()
   #else
     Serial.println(F("describe:EmonTX3CM"));
   #endif
+
+  ////
+  // Additional config
+  rf_whitening = 0; // No RF
+
+  // Change CT 4 to act like CTs 1-3
+  i4Cal = 90.74; // (2000 turns / 120 + 27 Ohm burden = 22.04) = 90.74
+  i4Lead = 4.2;
+  ////
  
   load_config(true);                                                        // Load RF config from EEPROM (if any exists)
   
@@ -318,7 +327,23 @@ void loop()
       if (emontx.T2!=30000) { Serial.print(F(",T2:")); Serial.print(emontx.T2*0.01); }
       if (emontx.T3!=30000) { Serial.print(F(",T3:")); Serial.print(emontx.T3*0.01); }
   
+      // Additional metrics
+      Serial.print(F(",Freq:")); Serial.print(EmonLibCM_getLineFrequency());
+      if (CT1) { Serial.print(F(",A1:")); Serial.print(EmonLibCM_getApparentPower(0)); }
+      if (CT2) { Serial.print(F(",A2:")); Serial.print(EmonLibCM_getApparentPower(1)); }
+      if (CT3) { Serial.print(F(",A3:")); Serial.print(EmonLibCM_getApparentPower(2)); }
+      if (CT4) { Serial.print(F(",A4:")); Serial.print(EmonLibCM_getApparentPower(3)); }
+      if (CT1) { Serial.print(F(",I1:")); Serial.print(EmonLibCM_getIrms(0)); }
+      if (CT2) { Serial.print(F(",I2:")); Serial.print(EmonLibCM_getIrms(1)); }
+      if (CT3) { Serial.print(F(",I3:")); Serial.print(EmonLibCM_getIrms(2)); }
+      if (CT4) { Serial.print(F(",I4:")); Serial.print(EmonLibCM_getIrms(3)); }
+      if (CT1) { Serial.print(F(",PF1:")); Serial.print(EmonLibCM_getPF(0), 4); }
+      if (CT2) { Serial.print(F(",PF2:")); Serial.print(EmonLibCM_getPF(1), 4); }
+      if (CT3) { Serial.print(F(",PF3:")); Serial.print(EmonLibCM_getPF(2), 4); }
+      if (CT4) { Serial.print(F(",PF4:")); Serial.print(EmonLibCM_getPF(3), 4); }
+      
       Serial.print(F(",pulse:")); Serial.println(emontx.pulse);  
+      
       delay(20);
     }
     digitalWrite(LEDpin,HIGH); delay(50);digitalWrite(LEDpin,LOW);
